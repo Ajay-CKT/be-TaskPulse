@@ -5,4 +5,4 @@
 
 ## Checklist
 
-[x] server setup done!
+- [x] server setup done!
