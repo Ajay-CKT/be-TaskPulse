@@ -1,0 +1,24 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "Task management app with CRUD functionalities and collaborative features",
+  "homepage": "https://github.com/Ajay-CKT/be-TaskPulse#readme",
+  "bugs": {
+    "url": "https://github.com/Ajay-CKT/be-TaskPulse/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ajay-CKT/be-TaskPulse.git"
+  },
+  "license": "ISC",
+  "author": "Ajay T",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}
