@@ -9,3 +9,4 @@
 - [x] mongob connection done!
 - [x] MVC folder setup
 - [x] Auth routes & controllers setup
+- [x] Basic User model and Authentication
