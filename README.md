@@ -10,3 +10,4 @@
 - [x] MVC folder setup
 - [x] Auth routes & controllers setup
 - [x] Basic User model and Authentication
+- [x] user edit profile setup
