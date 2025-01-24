@@ -67,7 +67,11 @@ const authController = {
   },
   checkMe: async (request, response) => {
     try {
-      response.status(200).json({ message: "User fetched!" });
+      const userId = request.userId;
+      const user = await User.findOne({ _id: { $eq: userId } }).select(
+        "-_id -password -createdAt -updatedAt -__v"
+      );
+      response.status(200).json({ message: "User fetched!", user: user });
     } catch (error) {
       response.status(500).json({ message: error.message });
     }
