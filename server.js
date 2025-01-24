@@ -1,8 +1,11 @@
-const express = require("express");
-const { PORT } = require("./utils/config");
+const mongoose = require("mongoose");
+const { MONGODB_URI, PORT } = require("./utils/config");
+const app = require("./app");
 
-const app = express();
-
-app.use(express.json());
-
-app.listen(PORT, () => console.log("Server running..."));
+mongoose
+  .connect(MONGODB_URI)
+  .then(() => {
+    console.info("Database connected...");
+    app.listen(PORT, () => console.info("Server running..."));
+  })
+  .catch((error) => console.error(error));

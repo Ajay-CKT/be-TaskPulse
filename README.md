@@ -6,3 +6,4 @@
 ## Checklist
 
 - [x] server setup done!
+- [x] mongob connection done!
