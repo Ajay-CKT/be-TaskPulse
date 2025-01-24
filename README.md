@@ -7,3 +7,4 @@
 
 - [x] server setup done!
 - [x] mongob connection done!
+- [x] MVC folder setup
