@@ -17,6 +17,10 @@ const userSchema = new mongoose.Schema({
     trim: true,
     required: true,
   },
+  resetToken: {
+    type: String,
+    default: null,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

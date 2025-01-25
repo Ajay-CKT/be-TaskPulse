@@ -11,3 +11,4 @@
 - [x] Auth routes & controllers setup
 - [x] Basic User model and Authentication
 - [x] user edit profile setup
+- [x] user password reset --using nodemailer

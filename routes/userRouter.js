@@ -8,5 +8,7 @@ userRouter.put(
   authenticate.checkAuth,
   userController.editProfile
 );
+userRouter.post("/forgot-password", userController.forgotPassword);
+userRouter.put("/reset-password/:token", userController.resetPassword);
 
 module.exports = userRouter;
