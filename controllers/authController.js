@@ -69,7 +69,7 @@ const authController = {
     try {
       const userId = request.userId;
       const user = await User.findOne({ _id: { $eq: userId } }).select(
-        "-_id -password -createdAt -updatedAt -__v"
+        "-_id name email"
       );
       response.status(200).json({ message: "User fetched!", user: user });
     } catch (error) {
