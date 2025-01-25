@@ -12,3 +12,4 @@
 - [x] Basic User model and Authentication
 - [x] user edit profile setup
 - [x] user password reset --using nodemailer
+- [x] add roles middleware, test with admin

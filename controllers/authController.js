@@ -7,7 +7,7 @@ const authController = {
   register: async (request, response) => {
     try {
       // Get registration details from request body
-      const { name, email, password } = request.body;
+      const { name, email, password, role } = request.body;
       // Find if user already exists with this email
       const existingUser = await User.findOne({ email: { $eq: email } });
       // If already user exist, return response

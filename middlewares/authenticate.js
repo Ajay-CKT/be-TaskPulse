@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { SECRET_KEY } = require("../utils/config");
+const User = require("../models/User");
 
 const authenticate = {
   checkAuth: async (request, response, next) => {
@@ -15,6 +16,16 @@ const authenticate = {
       // Continue to next middleware
       next();
     });
+  },
+  allowedRoles: (roles) => {
+    return async (request, response, next) => {
+      const userId = request.userId;
+      const user = await User.findById(userId);
+      if (!user) return response.status(401).json({ message: "Unauthorized" });
+      if (!roles.includes(user.role))
+        return response.status(403).json({ message: "Forbidden" });
+      next();
+    };
   },
 };
 
