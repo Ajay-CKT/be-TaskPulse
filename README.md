@@ -13,3 +13,5 @@
 - [x] user edit profile setup
 - [x] user password reset --using nodemailer
 - [x] add roles middleware, test with admin
+- [x] Team model skeleton setup
+- [x] Task model creation, update, delete

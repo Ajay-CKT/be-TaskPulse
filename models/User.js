@@ -22,6 +22,12 @@ const userSchema = new mongoose.Schema({
     enum: ["user", "teamAdmin", "admin"],
     default: "user",
   },
+  tasks: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Task",
+    },
+  ],
   resetToken: {
     type: String,
     default: null,
