@@ -15,3 +15,4 @@
 - [x] add roles middleware, test with admin
 - [x] Team model skeleton setup
 - [x] Task model creation, update, delete
+- [x] Reminder notifications in User model

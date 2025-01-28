@@ -109,6 +109,12 @@ const userController = {
                     </strong>
                   </P>`
                 );
+                {
+                  index === 0
+                    ? user.notifications.push(`${title}: due in 1 hour`)
+                    : user.notifications.push(`${title}: due in 30 minutes`);
+                }
+                await user.save();
               } catch (error) {
                 console.error(
                   `Error sending notification mail for the task ${title}`
@@ -132,6 +138,8 @@ const userController = {
                     ${new Date(deadline).toUTCString().slice(17)}</strong> 
                     </P>`
                 );
+                user.notifications.push(`${title}: due in 1 hour`);
+                await user.save();
               } catch (error) {
                 console.error(
                   `Error sending notification mail for the task ${title}`
@@ -191,6 +199,12 @@ const userController = {
                     .toUTCString()
                     .slice(17)}</P>`
                 );
+                {
+                  index === 0
+                    ? user.notifications.push(`${title}: due in 1 hour`)
+                    : user.notifications.push(`${title}: due in 30 minutes`);
+                }
+                await user.save();
               } catch (error) {
                 console.error(
                   `Error sending notification mail for the task ${title}`
@@ -215,6 +229,8 @@ const userController = {
                       .toUTCString()
                       .slice(17)}</P>`
                   );
+                  user.notifications.push(`${title}: due in 1 hour`);
+                  await user.save();
                 } catch (error) {
                   console.error(
                     `Error sending notification mail for the task ${title}`

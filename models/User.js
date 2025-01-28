@@ -28,6 +28,11 @@ const userSchema = new mongoose.Schema({
       ref: "Task",
     },
   ],
+  notifications: [
+    {
+      type: String,
+    },
+  ],
   resetToken: {
     type: String,
     default: null,
