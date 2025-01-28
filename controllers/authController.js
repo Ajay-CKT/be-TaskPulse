@@ -67,11 +67,16 @@ const authController = {
   },
   checkMe: async (request, response) => {
     try {
+      // Get the user id from the request object
       const userId = request.userId;
+      // Find the user with that id and send the response
       const user = await User.findOne({ _id: { $eq: userId } }).select(
         "-_id name email"
       );
-      response.status(200).json({ message: "User fetched!", user: user });
+      // If user is not found
+      if (!user) return response.status(404).json({ message: "Unauthorized" });
+      // If found return success response
+      response.status(200).json({ message: "Authorized User!", user: user });
     } catch (error) {
       response.status(500).json({ message: error.message });
     }
