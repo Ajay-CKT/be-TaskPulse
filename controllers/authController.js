@@ -71,7 +71,7 @@ const authController = {
       const userId = request.userId;
       // Find the user with that id and send the response
       const user = await User.findOne({ _id: { $eq: userId } }).select(
-        "-_id name email"
+        "-_id name email role"
       );
       // If user is not found
       if (!user) return response.status(404).json({ message: "Unauthorized" });
