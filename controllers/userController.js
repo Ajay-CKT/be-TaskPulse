@@ -1,11 +1,21 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-const { SECRET_KEY, CLIENT_URL } = require("../utils/config");
+const { SECRET_KEY, CLIENT_URL1 } = require("../utils/config");
 const sendEmail = require("../utils/sendEmail");
 const bcrypt = require("bcrypt");
 const Task = require("../models/Task");
 
 const userController = {
+  viewProfile: async (request, response) => {
+    try {
+      const userId = request.userId;
+      const user = await User.findOne({ _id: { $eq: userId } });
+      if (!user) return response.status(404).json({ message: "Unauthorized" });
+      response.status(200).json({ user });
+    } catch (error) {
+      response.status(500).json({ message: error.messaage });
+    }
+  },
   editProfile: async (request, response) => {
     try {
       const { name } = request.body;
@@ -23,7 +33,7 @@ const userController = {
       if (!existingUser)
         return response.status(404).json({ message: "User not exits" });
       const token = jwt.sign({ email }, SECRET_KEY, { expiresIn: "1h" });
-      const resetLink = `${CLIENT_URL}/reset-password/${token}`;
+      const resetLink = `${CLIENT_URL1}/reset-password/${token}`;
       existingUser.resetToken = token;
       await existingUser.save();
       await sendEmail(
@@ -257,6 +267,46 @@ const userController = {
       response.status(200).json({ message: "Task deleted successfully" });
     } catch (error) {
       response.status(500).json({ message: error.messaage });
+    }
+  },
+  viewTasks: async (request, response) => {
+    try {
+      const userId = request.userId;
+      const user = await User.findById(userId).populate("tasks");
+      if (!user) return response.status(404).json({ message: "Unauthorized" });
+      response.status(200).json({ tasks: user.tasks });
+    } catch (error) {
+      response.status(500).json({ message: error.message });
+    }
+  },
+  viewTaskById: async (request, response) => {
+    try {
+      const { taskId } = request.params;
+      const userId = request.userId;
+      const user = await User.findById(userId).populate("tasks");
+      if (!user) return response.status(404).json({ message: "Unauthorized" });
+      const task = user.tasks.find((task) => task._id.toString() === taskId);
+      if (!task)
+        return response.status(404).json({ message: "Task not found" });
+      response.status(200).json({ task });
+    } catch (error) {
+      response.status(500).json({ message: error.message });
+    }
+  },
+  taskCompleted: async (request, response) => {
+    try {
+      const userId = request.userId;
+      const user = await User.findById(userId).populate("tasks");
+      if (!user) return response.status(404).json({ message: "Unauthorized" });
+      const { taskId } = request.params;
+      const task = user.tasks.find((task) => task._id.toString() === taskId);
+      if (!task)
+        return response.status(404).json({ message: "Task not found" });
+      task.status = "completed";
+      await task.save();
+      response.status(200).json({ message: "Task completed successfully" });
+    } catch (error) {
+      response.status(500).json({ message: error.message });
     }
   },
 };

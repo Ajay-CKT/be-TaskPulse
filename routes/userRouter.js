@@ -3,6 +3,12 @@ const userController = require("../controllers/userController");
 const authenticate = require("../middlewares/authenticate");
 const userRouter = express.Router();
 
+userRouter.get(
+  "/view-profile",
+  authenticate.checkAuth,
+  authenticate.allowedRoles(["user"]),
+  userController.viewProfile
+);
 userRouter.put(
   "/edit-profile/:id",
   authenticate.checkAuth,
@@ -27,6 +33,27 @@ userRouter.delete(
   authenticate.checkAuth,
   authenticate.allowedRoles(["user"]),
   userController.deleteTask
+);
+
+userRouter.get(
+  "/view-tasks",
+  authenticate.checkAuth,
+  authenticate.allowedRoles(["user"]),
+  userController.viewTasks
+);
+
+userRouter.get(
+  "/view-task/:taskId",
+  authenticate.checkAuth,
+  authenticate.allowedRoles(["user"]),
+  userController.viewTaskById
+);
+
+userRouter.put(
+  "/complete-task/:taskId",
+  authenticate.checkAuth,
+  authenticate.allowedRoles(["user"]),
+  userController.taskCompleted
 );
 
 module.exports = userRouter;
