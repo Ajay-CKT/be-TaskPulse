@@ -56,4 +56,11 @@ userRouter.put(
   userController.taskCompleted
 );
 
+userRouter.post(
+  "",
+  authenticate.checkAuth,
+  authenticate.allowedRoles(["user"]),
+  userController
+);
+
 module.exports = userRouter;

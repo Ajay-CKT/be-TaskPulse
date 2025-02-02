@@ -1,9 +1,15 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-const { SECRET_KEY, CLIENT_URL1 } = require("../utils/config");
+const {
+  SECRET_KEY,
+  CLIENT_URL1,
+  CLOUDINARY_ASSET_FOLDER,
+  CLOUDINARY_UPLOAD_PRESET,
+} = require("../utils/config");
 const sendEmail = require("../utils/sendEmail");
 const bcrypt = require("bcrypt");
 const Task = require("../models/Task");
+const cloudinary = require("../utils/cloudinary");
 
 const userController = {
   viewProfile: async (request, response) => {
@@ -305,6 +311,27 @@ const userController = {
       task.status = "completed";
       await task.save();
       response.status(200).json({ message: "Task completed successfully" });
+    } catch (error) {
+      response.status(500).json({ message: error.message });
+    }
+  },
+  uploadFile: async (request, response) => {
+    try {
+      await cloudinary.uploader.upload(
+        "./public/sample.pdf",
+        {
+          asset_folder: CLOUDINARY_ASSET_FOLDER,
+          upload_preset: CLOUDINARY_UPLOAD_PRESET,
+          // if needed or specify those in upload preset
+          access_mode: "public",
+          resource_type: "raw",
+          use_filename: true,
+          use_asset_folder_as_public_id_prefix: true,
+          use_filename_as_display_name: true,
+        },
+        (error, result) => console.log(result.secure_url)
+      );
+      response.status(200).json({ message: "Uploaded" });
     } catch (error) {
       response.status(500).json({ message: error.message });
     }
