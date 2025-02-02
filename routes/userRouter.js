@@ -57,10 +57,10 @@ userRouter.put(
 );
 
 userRouter.post(
-  "",
+  "/complete-task/:taskId/upload-file",
   authenticate.checkAuth,
   authenticate.allowedRoles(["user"]),
-  userController
+  userController.uploadFile
 );
 
 module.exports = userRouter;

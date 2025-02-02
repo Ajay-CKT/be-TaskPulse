@@ -4,14 +4,14 @@ const cors = require("cors");
 const authRouter = require("./routes/authRouter");
 const userRouter = require("./routes/userRouter");
 const adminRouter = require("./routes/adminRouter");
-const { CLIENT_URL1 } = require("./utils/config");
+const { CLIENT_URL1, CLIENT_URL2 } = require("./utils/config");
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: [CLIENT_URL1],
+    origin: [CLIENT_URL1, CLIENT_URL2],
     credentials: true,
   })
 );

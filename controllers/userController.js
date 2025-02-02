@@ -92,6 +92,7 @@ const userController = {
         priority,
         createdBy: userId,
       });
+      newTask.expiredAt = new Date(deadline);
       await newTask.save();
       user.tasks.push(newTask._id);
       await user.save();
@@ -184,6 +185,7 @@ const userController = {
           deadline,
           priority,
           updatedAt: Date.now(),
+          expiredAt: new Date(deadline),
         },
         { new: true }
       );

@@ -40,6 +40,12 @@ const taskSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  expiredAt: {
+    type: Date,
+    index: {
+      expireAfterSeconds: 0,
+    },
+  },
 });
 
 module.exports = mongoose.model("Task", taskSchema, "tasks");
