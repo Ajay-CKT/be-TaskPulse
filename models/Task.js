@@ -26,6 +26,9 @@ const taskSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
   },
+  pdfUrl: {
+    type: String,
+  },
   assignedTo: [
     {
       type: mongoose.Schema.Types.ObjectId,

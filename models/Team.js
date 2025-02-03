@@ -6,10 +6,6 @@ const teamSchema = new mongoose.Schema({
     trim: true,
     required: true,
   },
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
   members: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -19,9 +15,21 @@ const teamSchema = new mongoose.Schema({
   tasks: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Task",
+      ref: "TeamTask",
     },
   ],
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 module.exports = mongoose.model("Team", teamSchema, "teams");

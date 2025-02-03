@@ -304,23 +304,15 @@ const userController = {
   taskCompleted: async (request, response) => {
     try {
       const userId = request.userId;
+      const { selectedFile } = request.files;
       const user = await User.findById(userId).populate("tasks");
       if (!user) return response.status(404).json({ message: "Unauthorized" });
       const { taskId } = request.params;
       const task = user.tasks.find((task) => task._id.toString() === taskId);
       if (!task)
         return response.status(404).json({ message: "Task not found" });
-      task.status = "completed";
-      await task.save();
-      response.status(200).json({ message: "Task completed successfully" });
-    } catch (error) {
-      response.status(500).json({ message: error.message });
-    }
-  },
-  uploadFile: async (request, response) => {
-    try {
-      await cloudinary.uploader.upload(
-        "./public/sample.pdf",
+      const PDF_URL = await cloudinary.uploader.upload(
+        selectedFile.tempFilePath,
         {
           asset_folder: CLOUDINARY_ASSET_FOLDER,
           upload_preset: CLOUDINARY_UPLOAD_PRESET,
@@ -330,10 +322,26 @@ const userController = {
           use_filename: true,
           use_asset_folder_as_public_id_prefix: true,
           use_filename_as_display_name: true,
-        },
-        (error, result) => console.log(result.secure_url)
+        }
       );
-      response.status(200).json({ message: "Uploaded" });
+      task.pdfUrl = PDF_URL.secure_url;
+      task.status = "completed";
+      await task.save();
+      response.status(200).json({ message: "Task completed successfully" });
+    } catch (error) {
+      response.status(500).json({ message: error.message });
+    }
+  },
+  taskShared: async (request, response) => {
+    try {
+      const { email } = request.body;
+      const { taskId } = request.params;
+      const user = await User.findOne({ email });
+      if (!user)
+        return response.status(404).json({ messaage: "user not found" });
+      user.tasks.push(taskId);
+      await user.save();
+      response.status(200).json({ message: "Task Shared successfully" });
     } catch (error) {
       response.status(500).json({ message: error.message });
     }
