@@ -6,7 +6,6 @@ const userRouter = express.Router();
 userRouter.get(
   "/view-profile",
   authenticate.checkAuth,
-  authenticate.allowedRoles(["user"]),
   userController.viewProfile
 );
 userRouter.put(
@@ -19,47 +18,36 @@ userRouter.put("/reset-password/:token", userController.resetPassword);
 userRouter.post(
   "/create-task",
   authenticate.checkAuth,
-  authenticate.allowedRoles(["user"]),
   userController.createTask
 );
 userRouter.put(
   "/update-task/:taskId",
   authenticate.checkAuth,
-  authenticate.allowedRoles(["user"]),
   userController.updateTask
 );
 userRouter.delete(
   "/delete-task/:taskId",
   authenticate.checkAuth,
-  authenticate.allowedRoles(["user"]),
   userController.deleteTask
 );
 
-userRouter.get(
-  "/view-tasks",
-  authenticate.checkAuth,
-  authenticate.allowedRoles(["user"]),
-  userController.viewTasks
-);
+userRouter.get("/view-tasks", authenticate.checkAuth, userController.viewTasks);
 
 userRouter.get(
   "/view-task/:taskId",
   authenticate.checkAuth,
-  authenticate.allowedRoles(["user"]),
   userController.viewTaskById
 );
 
 userRouter.put(
   "/complete-task/:taskId",
   authenticate.checkAuth,
-  authenticate.allowedRoles(["user"]),
   userController.taskCompleted
 );
 
 userRouter.put(
   "/share-task/:taskId",
   authenticate.checkAuth,
-  authenticate.allowedRoles(["user"]),
   userController.taskShared
 );
 
