@@ -4,18 +4,16 @@ const Task = require("../models/Task");
 cron.schedule("* * * * *", async () => {
   try {
     const dueTime = new Date();
-    const overdueTasks = await Task.find({
-      deadline: { $lt: dueTime },
-      status: { $ne: "pending" },
-      status: { $ne: "completed" },
-    });
 
-    if (overdueTasks.length > 0) {
-      for (const task of overdueTasks) {
-        task.status = "pending";
-        await task.save();
-      }
-    }
+    await Task.updateMany(
+      {
+        deadline: { $lt: dueTime },
+        status: { $nin: ["pending", "completed"] },
+      },
+      { $set: { status: "pending" } }
+    );
+
+    console.log("Overdue tasks updated successfully.");
   } catch (error) {
     console.error("Error updating overdue tasks:", error);
   }
