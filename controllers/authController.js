@@ -48,13 +48,13 @@ const authController = {
       const token = jwt.sign({ id: existingUser._id }, SECRET_KEY, {
         expiresIn: "1h",
       });
-      await response.cookie("token", token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "None",
-      });
+      // await response.cookie("token", token, {
+      //   httpOnly: true,
+      //   secure: true,
+      //   sameSite: "None",
+      // });
       // return succuss response
-      response.status(200).json({ message: "Login successful!" });
+      response.status(200).json({ message: "Login successful!", token });
     } catch (error) {
       response.status(401).json({ message: error.message });
     }
@@ -62,7 +62,7 @@ const authController = {
   logout: async (request, response) => {
     try {
       // Clear the cookie in the response
-      response.clearCookie("token");
+      // response.clearCookie("token");
       // Return the succuss response
       response.status(200).json({ message: "Logout successful!" });
     } catch (error) {
@@ -70,17 +70,27 @@ const authController = {
     }
   },
   checkMe: async (request, response) => {
+    // try {
+    //   // Get the user id from the request object
+    //   const userId = request.userId;
+    //   // Find the user with that id and send the response
+    //   const user = await User.findOne({ _id: { $eq: userId } }).select(
+    //     "-_id name email role"
+    //   );
+    //   // If user is not found
+    //   if (!user) return response.status(404).json({ message: "Unauthorized" });
+    //   // If found return success response
+    //   response.status(200).json({ message: "Authorized User!", user: user });
+    // } catch (error) {
+    //   response.status(500).json({ message: error.message });
+    // }
     try {
-      // Get the user id from the request object
       const userId = request.userId;
-      // Find the user with that id and send the response
-      const user = await User.findOne({ _id: { $eq: userId } }).select(
-        "-_id name email role"
-      );
-      // If user is not found
+      const user = await User.findById(userId).select("name email role");
+
       if (!user) return response.status(404).json({ message: "Unauthorized" });
-      // If found return success response
-      response.status(200).json({ message: "Authorized User!", user: user });
+
+      response.status(200).json({ message: "Authorized User!", user });
     } catch (error) {
       response.status(500).json({ message: error.message });
     }
