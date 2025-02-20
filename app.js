@@ -1,5 +1,4 @@
 const express = require("express");
-const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const authRouter = require("./routes/authRouter");
 const userRouter = require("./routes/userRouter");
@@ -11,11 +10,9 @@ const fileupload = require("express-fileupload");
 app.use(fileupload({ useTempFiles: true }));
 
 app.use(express.json());
-app.use(cookieParser());
 app.use(
   cors({
     origin: CLIENT_URL1,
-    credentials: true,
   })
 );
 app.use("/api/v1/auth", authRouter);

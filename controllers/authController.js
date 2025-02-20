@@ -48,11 +48,6 @@ const authController = {
       const token = jwt.sign({ id: existingUser._id }, SECRET_KEY, {
         expiresIn: "1h",
       });
-      // await response.cookie("token", token, {
-      //   httpOnly: true,
-      //   secure: true,
-      //   sameSite: "None",
-      // });
       // return succuss response
       response.status(200).json({ message: "Login successful!", token });
     } catch (error) {
@@ -61,8 +56,7 @@ const authController = {
   },
   logout: async (request, response) => {
     try {
-      // Clear the cookie in the response
-      // response.clearCookie("token");
+      // Clear the token from the frontend
       // Return the succuss response
       response.status(200).json({ message: "Logout successful!" });
     } catch (error) {
@@ -70,23 +64,9 @@ const authController = {
     }
   },
   checkMe: async (request, response) => {
-    // try {
-    //   // Get the user id from the request object
-    //   const userId = request.userId;
-    //   // Find the user with that id and send the response
-    //   const user = await User.findOne({ _id: { $eq: userId } }).select(
-    //     "-_id name email role"
-    //   );
-    //   // If user is not found
-    //   if (!user) return response.status(404).json({ message: "Unauthorized" });
-    //   // If found return success response
-    //   response.status(200).json({ message: "Authorized User!", user: user });
-    // } catch (error) {
-    //   response.status(500).json({ message: error.message });
-    // }
     try {
       const userId = request.userId;
-      const user = await User.findById(userId).select("name email role");
+      const user = await User.findById(userId).select("-_id name email role");
 
       if (!user) return response.status(404).json({ message: "Unauthorized" });
 

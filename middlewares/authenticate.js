@@ -4,7 +4,6 @@ const User = require("../models/User");
 
 const authenticate = {
   checkAuth: async (request, response, next) => {
-    // Get token from the cookie
     const authHeader = request.headers.authorization;
     // If token not exists
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -16,20 +15,11 @@ const authenticate = {
 
     try {
       const decoded = jwt.verify(token, SECRET_KEY);
-      request.userId = decoded.id; // Attach user ID to request
+      request.userId = decoded.id;
       next();
     } catch (error) {
       response.status(403).json({ message: "Invalid token" });
     }
-
-    // // If token exists verify
-    // jwt.verify(token, SECRET_KEY, (error, user) => {
-    //   if (error) return response.status(401).json({ message: error.message });
-    //   // Set user in request
-    //   request.userId = user.id;
-    //   // Continue to next middleware
-    //   next();
-    // });
   },
   allowedRoles: (roles) => {
     return async (request, response, next) => {
