@@ -1,7 +1,7 @@
 const cron = require("node-cron");
 const Task = require("../models/Task");
 
-cron.schedule("0 0 * * *", async () => {
+cron.schedule("* * * * *", async () => {
   // Runs at midnight daily
   try {
     const result = await Task.updateMany(
