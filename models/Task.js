@@ -29,12 +29,12 @@ const taskSchema = new mongoose.Schema({
   pdfUrl: {
     type: String,
   },
-  assignedTo: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
-  ],
+  assignedBy: {
+    type: String,
+  },
+  completedBy: {
+    type: String,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

@@ -1,5 +1,9 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
+const fs = require("fs");
+const path = require("path");
+const { v4: uuidv4 } = require("uuid");
+
 const {
   SECRET_KEY,
   CLIENT_URL1,
@@ -83,88 +87,64 @@ const userController = {
     try {
       const { title, description, deadline, priority } = request.body;
       const userId = request.userId;
+
       const user = await User.findById(userId);
       if (!user) return response.status(404).json({ message: "Unauthorized" });
-      const newTask = await Task({
+
+      const dueDate = new Date(deadline);
+      if (dueDate < Date.now()) {
+        return response
+          .status(400)
+          .json({ message: "Deadline must be in the future" });
+      }
+      const newTask = new Task({
         title,
         description,
         deadline,
         priority,
         createdBy: userId,
+        assignedBy: user.name,
+        expiredAt: dueDate,
       });
-      newTask.expiredAt = new Date(deadline);
+
       await newTask.save();
+
       user.tasks.push(newTask._id);
       await user.save();
+
       response.status(201).json({ message: "Task created successfully" });
-      // Notify based on the deadline according to the priority
-      const dueDate = new Date(deadline);
-      const prioritySet = {
-        low: "low",
-        medium: "medium",
-        high: "high",
+
+      const prioritySet = { low: "low", medium: "medium", high: "high" };
+
+      const scheduleNotification = async (timeOffset, message) => {
+        const notifyTime = new Date(dueDate.getTime() - timeOffset);
+        if (notifyTime > Date.now()) {
+          setTimeout(async () => {
+            try {
+              await sendEmail(
+                user.email,
+                `Task Deadline Reminder: ${title}`,
+                `<p>${message}</p>`
+              );
+              user.notifications.push(message);
+              await user.save();
+            } catch (error) {
+              console.error(
+                `Error sending notification mail for task ${title}`
+              );
+            }
+          }, notifyTime.getTime() - Date.now());
+        }
       };
 
-      if (prioritySet.high === priority) {
-        [
-          new Date(dueDate.getTime() - 60 * 60 * 1000),
-          new Date(dueDate.getTime() - 30 * 60 * 1000),
-        ].forEach((time, index) => {
-          if (time > Date.now()) {
-            setTimeout(async () => {
-              try {
-                await sendEmail(
-                  user.email,
-                  `Task Deadline Reminder : ${title}`,
-                  `<p>
-                    Your task <strong>${title}</strong> is due in
-                    ${
-                      index === 0 ? "1 hour" : "30 minutes"
-                    }. Please complete it before the deadline: 
-                    <strong>
-                      ${new Date(deadline).toUTCString().slice(17)}
-                    </strong>
-                  </P>`
-                );
-                {
-                  index === 0
-                    ? user.notifications.push(`${title}: due in 1 hour`)
-                    : user.notifications.push(`${title}: due in 30 minutes`);
-                }
-                await user.save();
-              } catch (error) {
-                console.error(
-                  `Error sending notification mail for the task ${title}`
-                );
-              }
-            }, time.getTime() - Date.now());
-          }
-        });
-      } else if (prioritySet.medium === priority) {
-        [new Date(dueDate.getTime() - 60 * 60 * 1000)].forEach((time) => {
-          if (time > Date.now()) {
-            setTimeout(async () => {
-              try {
-                await sendEmail(
-                  user.email,
-                  `Task Deadline Reminder : ${title}`,
-                  `<p>
-                      Your task <strong>${title}</strong> is due in 1 hour.
-                      Please complete it before the deadline: 
-                    <strong>
-                    ${new Date(deadline).toUTCString().slice(17)}</strong> 
-                    </P>`
-                );
-                user.notifications.push(`${title}: due in 1 hour`);
-                await user.save();
-              } catch (error) {
-                console.error(
-                  `Error sending notification mail for the task ${title}`
-                );
-              }
-            }, time.getTime() - Date.now());
-          }
-        });
+      if (priority === prioritySet.high) {
+        await scheduleNotification(60 * 60 * 1000, `${title}: due in 1 hour`);
+        await scheduleNotification(
+          30 * 60 * 1000,
+          `${title}: due in 30 minutes`
+        );
+      } else if (priority === prioritySet.medium) {
+        await scheduleNotification(60 * 60 * 1000, `${title}: due in 1 hour`);
       }
     } catch (error) {
       response.status(500).json({ message: error.message });
@@ -175,9 +155,17 @@ const userController = {
       const { taskId } = request.params;
       const { title, description, deadline, priority } = request.body;
       const userId = request.userId;
+
       const user = await User.findById(userId);
       if (!user) return response.status(404).json({ message: "Unauthorized" });
-      await Task.findByIdAndUpdate(
+
+      const dueDate = new Date(deadline);
+      if (dueDate < Date.now()) {
+        return response
+          .status(400)
+          .json({ message: "Deadline must be in the future" });
+      }
+      const updatedTask = await Task.findByIdAndUpdate(
         taskId,
         {
           title,
@@ -185,13 +173,17 @@ const userController = {
           deadline,
           priority,
           updatedAt: Date.now(),
-          expiredAt: new Date(deadline),
+          expiredAt: dueDate,
         },
         { new: true }
       );
+
+      if (!updatedTask) {
+        return response.status(404).json({ message: "Task not found" });
+      }
+
       response.status(200).json({ message: "Task updated successfully" });
-      // Notify based on the deadline according to the priority
-      const dueDate = new Date(deadline);
+
       const prioritySet = {
         low: "low",
         medium: "medium",
@@ -199,68 +191,61 @@ const userController = {
       };
 
       if (prioritySet.high === priority) {
-        [
-          new Date(dueDate.getTime() - 60 * 60 * 1000),
-          new Date(dueDate.getTime() - 30 * 60 * 1000),
-        ].forEach((time, index) => {
-          if (time > Date.now()) {
+        [1 * 60 * 60 * 1000, 30 * 60 * 1000].forEach((offset, index) => {
+          const reminderTime = new Date(dueDate.getTime() - offset);
+          if (reminderTime > Date.now()) {
             setTimeout(async () => {
               try {
                 await sendEmail(
                   user.email,
-                  `Task Deadline Reminder : ${title}`,
-                  `<p>Your task "${title}" is due ${
-                    index === 0 ? "in 1 hour" : "in 30 minutes"
-                  }. Please complete it before the deadline: ${new Date(
-                    deadline
-                  )
-                    .toUTCString()
-                    .slice(17)}</P>`
+                  `Task Deadline Reminder: ${title}`,
+                  `<p>Your task <strong>${title}</strong> is due in 
+                ${
+                  index === 0 ? "1 hour" : "30 minutes"
+                }. Please complete it before 
+                the deadline: <strong>${dueDate
+                  .toUTCString()
+                  .slice(17)}</strong>.</p>`
                 );
-                {
-                  index === 0
-                    ? user.notifications.push(`${title}: due in 1 hour`)
-                    : user.notifications.push(`${title}: due in 30 minutes`);
-                }
+                user.notifications.push(
+                  `${title}: due in ${index === 0 ? "1 hour" : "30 minutes"}`
+                );
                 await user.save();
               } catch (error) {
                 console.error(
-                  `Error sending notification mail for the task ${title}`
+                  `Error sending notification mail for task ${title}:`,
+                  error
                 );
               }
-            }, time.getTime() - Date.now());
+            }, reminderTime.getTime() - Date.now());
           }
         });
       } else if (prioritySet.medium === priority) {
-        [new Date(dueDate.getTime() - 60 * 60 * 1000)].forEach(
-          (time, index) => {
-            if (time > Date.now()) {
-              setTimeout(async () => {
-                try {
-                  await sendEmail(
-                    user.email,
-                    `Task Deadline Reminder : ${title}`,
-                    `<p>Your task "${title}" is due in 1 hour
-                    }. Please complete it before the deadline: ${new Date(
-                      deadline
-                    )
-                      .toUTCString()
-                      .slice(17)}</P>`
-                  );
-                  user.notifications.push(`${title}: due in 1 hour`);
-                  await user.save();
-                } catch (error) {
-                  console.error(
-                    `Error sending notification mail for the task ${title}`
-                  );
-                }
-              }, time.getTime() - Date.now());
+        const reminderTime = new Date(dueDate.getTime() - 60 * 60 * 1000);
+        if (reminderTime > Date.now()) {
+          setTimeout(async () => {
+            try {
+              await sendEmail(
+                user.email,
+                `Task Deadline Reminder: ${title}`,
+                `<p>Your task <strong>${title}</strong> is due in 1 hour. Please complete it before 
+              the deadline: <strong>${dueDate
+                .toUTCString()
+                .slice(17)}</strong>.</p>`
+              );
+              user.notifications.push(`${title}: due in 1 hour`);
+              await user.save();
+            } catch (error) {
+              console.error(
+                `Error sending notification mail for task ${title}:`,
+                error
+              );
             }
-          }
-        );
+          }, reminderTime.getTime() - Date.now());
+        }
       }
     } catch (error) {
-      response.status(500).json({ message: error.messaage });
+      response.status(500).json({ message: error.message });
     }
   },
   deleteTask: async (request, response) => {
@@ -268,13 +253,21 @@ const userController = {
       const { taskId } = request.params;
       const userId = request.userId;
       const user = await User.findById(userId);
-      await Task.findByIdAndDelete(taskId);
-      // user.tasks = user.tasks.filter((id) => id.toString() !== taskId);
-      user.tasks.pop(taskId);
+
+      if (!user)
+        return response.status(404).json({ message: "User not found" });
+
+      const deletedTask = await Task.findByIdAndDelete(taskId);
+
+      if (!deletedTask)
+        return response.status(404).json({ message: "Task not found" });
+
+      user.tasks = user.tasks.filter((id) => id.toString() !== taskId);
       await user.save();
+
       response.status(200).json({ message: "Task deleted successfully" });
     } catch (error) {
-      response.status(500).json({ message: error.messaage });
+      response.status(500).json({ message: error.message });
     }
   },
   viewTasks: async (request, response) => {
@@ -311,22 +304,29 @@ const userController = {
       const task = user.tasks.find((task) => task._id.toString() === taskId);
       if (!task)
         return response.status(404).json({ message: "Task not found" });
-      const PDF_URL = await cloudinary.uploader.upload(
-        selectedFile.tempFilePath,
-        {
-          asset_folder: CLOUDINARY_ASSET_FOLDER,
-          upload_preset: CLOUDINARY_UPLOAD_PRESET,
-          // if needed or specify those in upload preset
-          access_mode: "public",
-          resource_type: "raw",
-          use_filename: true,
-          use_asset_folder_as_public_id_prefix: true,
-          use_filename_as_display_name: true,
-        }
-      );
+
+      const pdfFileName = `${uuidv4()}.pdf`;
+      const pdfFilePath = path.join("uploads", pdfFileName);
+
+      await selectedFile.mv(pdfFilePath);
+
+      const PDF_URL = await cloudinary.uploader.upload(pdfFilePath, {
+        access_mode: "public",
+        resource_type: "raw",
+        use_filename: true,
+        use_asset_folder_as_public_id_prefix: true,
+        use_filename_as_display_name: true,
+        asset_folder: CLOUDINARY_ASSET_FOLDER,
+        upload_preset: CLOUDINARY_UPLOAD_PRESET,
+      });
+
+      fs.unlinkSync(pdfFilePath);
+
       task.pdfUrl = PDF_URL.secure_url;
       task.status = "completed";
+      task.completedBy = user.name;
       await task.save();
+
       response.status(200).json({ message: "Task completed successfully" });
     } catch (error) {
       response.status(500).json({ message: error.message });

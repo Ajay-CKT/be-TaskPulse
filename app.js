@@ -7,7 +7,12 @@ const { CLIENT_URL1 } = require("./utils/config");
 const app = express();
 const fileupload = require("express-fileupload");
 
-app.use(fileupload({ useTempFiles: true }));
+app.use(
+  fileupload({
+    useTempFiles: true,
+    tempFileDir: "/tmp/",
+  })
+);
 
 app.use(express.json());
 app.use(
