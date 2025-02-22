@@ -1,8 +1,5 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-const fs = require("fs");
-const path = require("path");
-const { v4: uuidv4 } = require("uuid");
 
 const {
   SECRET_KEY,
@@ -310,23 +307,20 @@ const userController = {
       if (!task)
         return response.status(404).json({ message: "Task not found" });
 
-      // Generate unique file name
-      const pdfFileName = `${uuidv4()}.pdf`;
-      const pdfFilePath = path.join("uploads", pdfFileName);
+      await cloudinary.uploader.upload(
+        selectedFile.tempFilePath,
+        {
+          asset_folder: process.env.CLOUDINARY_ASSET_FOLDER,
+          access_mode: "public",
+          resource_type: "raw",
+        },
+        (error, result) => {
+          task.pdfUrl = result.secure_url;
+        }
+      );
+      console.log(selectedFile.tempFilePath);
+      console.log(task.pdfUrl);
 
-      await selectedFile.mv(pdfFilePath);
-
-      const uploadResult = await cloudinary.uploader.upload(pdfFilePath, {
-        folder: CLOUDINARY_ASSET_FOLDER,
-        resource_type: "raw",
-        access_mode: "public",
-        use_filename: true,
-        upload_preset: CLOUDINARY_UPLOAD_PRESET,
-      });
-
-      fs.unlinkSync(pdfFilePath);
-
-      task.pdfUrl = uploadResult.secure_url;
       task.status = "completed";
       task.completedBy = user.name;
       await task.save();
