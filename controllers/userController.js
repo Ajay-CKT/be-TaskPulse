@@ -309,7 +309,7 @@ const userController = {
       await cloudinary.uploader.upload(
         selectedFile.tempFilePath,
         {
-          asset_folder: process.env.CLOUDINARY_ASSET_FOLDER,
+          asset_folder: CLOUDINARY_ASSET_FOLDER,
           access_mode: "public",
           resource_type: "raw",
         },

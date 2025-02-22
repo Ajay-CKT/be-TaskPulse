@@ -1,7 +1,6 @@
 const express = require("express");
 const userController = require("../controllers/userController");
 const authenticate = require("../middlewares/authenticate");
-const upload = require("../utils/multerConfig");
 const userRouter = express.Router();
 
 userRouter.get(
@@ -43,7 +42,6 @@ userRouter.get(
 userRouter.put(
   "/complete-task/:taskId",
   authenticate.checkAuth,
-  upload.single("pdfFile"),
   userController.taskCompleted
 );
 
