@@ -46,7 +46,7 @@ const authController = {
         return response.status(404).json({ message: "Invalid credentials" });
       // If password matched, generate a token, save in response cookie return success response
       const token = jwt.sign({ id: existingUser._id }, SECRET_KEY, {
-        expiresIn: "1h",
+        expiresIn: "3h",
       });
       // return succuss response
       response.status(200).json({ message: "Login successful!", token });
