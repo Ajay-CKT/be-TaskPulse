@@ -297,39 +297,47 @@ const userController = {
   taskCompleted: async (request, response) => {
     try {
       const userId = request.userId;
+      if (!request.files || !request.files.selectedFile) {
+        return response.status(400).json({ message: "No file uploaded" });
+      }
+
       const { selectedFile } = request.files;
       const user = await User.findById(userId).populate("tasks");
-      if (!user) return response.status(404).json({ message: "Unauthorized" });
+      if (!user) return response.status(401).json({ message: "Unauthorized" });
+
       const { taskId } = request.params;
       const task = user.tasks.find((task) => task._id.toString() === taskId);
       if (!task)
         return response.status(404).json({ message: "Task not found" });
 
+      // Generate unique file name
       const pdfFileName = `${uuidv4()}.pdf`;
       const pdfFilePath = path.join("uploads", pdfFileName);
 
       await selectedFile.mv(pdfFilePath);
 
-      const PDF_URL = await cloudinary.uploader.upload(pdfFilePath, {
-        access_mode: "public",
+      const uploadResult = await cloudinary.uploader.upload(pdfFilePath, {
+        folder: CLOUDINARY_ASSET_FOLDER,
         resource_type: "raw",
+        access_mode: "public",
         use_filename: true,
-        use_asset_folder_as_public_id_prefix: true,
-        use_filename_as_display_name: true,
-        asset_folder: CLOUDINARY_ASSET_FOLDER,
         upload_preset: CLOUDINARY_UPLOAD_PRESET,
       });
 
       fs.unlinkSync(pdfFilePath);
 
-      task.pdfUrl = PDF_URL.secure_url;
+      task.pdfUrl = uploadResult.secure_url;
       task.status = "completed";
       task.completedBy = user.name;
       await task.save();
 
-      response.status(200).json({ message: "Task completed successfully" });
+      response
+        .status(200)
+        .json({ message: "Task completed successfully", pdfUrl: task.pdfUrl });
     } catch (error) {
-      response.status(500).json({ message: error.message });
+      response
+        .status(500)
+        .json({ message: "Internal Server Error", error: error.message });
     }
   },
   taskShared: async (request, response) => {
