@@ -96,7 +96,7 @@ const userController = {
       const newTask = new Task({
         title,
         description,
-        deadline,
+        deadline: new Date(deadline),
         priority,
         createdBy: userId,
         assignedBy: user.name,
@@ -166,7 +166,7 @@ const userController = {
         {
           title,
           description,
-          deadline,
+          deadline: new Date(deadline),
           priority,
           updatedAt: Date.now(),
           expiredAt: dueDate,
