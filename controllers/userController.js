@@ -5,7 +5,6 @@ const {
   SECRET_KEY,
   CLIENT_URL1,
   CLOUDINARY_ASSET_FOLDER,
-  CLOUDINARY_UPLOAD_PRESET,
 } = require("../utils/config");
 const sendEmail = require("../utils/sendEmail");
 const bcrypt = require("bcrypt");
@@ -294,29 +293,38 @@ const userController = {
   taskCompleted: async (request, response) => {
     try {
       const userId = request.userId;
-      if (!request.file)
-        return response.status(400).json({ message: "No PDF uploaded" });
+      if (!request.files || !request.files.selectedFile) {
+        return response.status(400).json({ message: "No file uploaded" });
+      }
 
+      const { selectedFile } = request.files;
       const user = await User.findById(userId).populate("tasks");
       if (!user) return response.status(401).json({ message: "Unauthorized" });
 
       const { taskId } = request.params;
-      const task = user.tasks.find((t) => t._id.toString() === taskId);
+      const task = user.tasks.find((task) => task._id.toString() === taskId);
+
       if (!task)
         return response.status(404).json({ message: "Task not found" });
+      await cloudinary.uploader.upload(
+        selectedFile.tempFilePath,
+        {
+          asset_folder: process.env.CLOUDINARY_ASSET_FOLDER,
+          access_mode: "public",
+          resource_type: "raw",
+        },
+        (error, result) => {
+          task.pdfUrl = result.secure_url;
+        }
+      );
 
-      // PDF URL from Cloudinary
-      const pdfUrl = request.file.path;
-
-      // Update task details
-      task.pdfUrl = pdfUrl;
       task.status = "completed";
       task.completedBy = user.name;
       await task.save();
 
-      response
-        .status(200)
-        .json({ message: "Task completed successfully", pdfUrl });
+      response.status(200).json({
+        message: "Task completed successfully",
+      });
     } catch (error) {
       response.status(500).json({ message: error.message });
     }
