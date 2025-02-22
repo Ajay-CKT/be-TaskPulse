@@ -14,6 +14,8 @@ app.use(
   })
 );
 
+console.log("CLIENT_URL1");
+
 app.use(express.json());
 app.use(
   cors({
