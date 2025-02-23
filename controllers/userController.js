@@ -311,7 +311,7 @@ const userController = {
         {
           asset_folder: CLOUDINARY_ASSET_FOLDER,
           access_mode: "public",
-          resource_type: "raw",
+          resource_type: "auto",
         },
         (error, result) => {
           task.pdfUrl = result.secure_url;
