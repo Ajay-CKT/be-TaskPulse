@@ -1,5 +1,6 @@
 const cron = require("node-cron");
 const Task = require("../models/Task");
+const io = require("socket.io");
 
 cron.schedule("* * * * *", async () => {
   try {
@@ -13,6 +14,7 @@ cron.schedule("* * * * *", async () => {
 
     if (result.modifiedCount > 0) {
       console.log(`✅ ${result.modifiedCount} tasks moved to pending status.`);
+      io.emit("taskUpdated");
     } else {
       console.log("✅ No overdue tasks found.");
     }
